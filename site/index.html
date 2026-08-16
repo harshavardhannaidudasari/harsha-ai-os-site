@@ -187,12 +187,33 @@
     background: var(--glass); border: 1px solid var(--glass-border); border-radius: 999px;
     padding: 7px 16px; margin-bottom: 26px;
   }
-  .hero-kicker .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--coral); }
+  .hero-kicker .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--coral); animation: pulseDot 2.2s ease-in-out infinite; }
+  .brand .dot { animation: pulseDot 2.2s ease-in-out infinite; }
+  @keyframes pulseDot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(238,90,56,0.45); }
+    50% { box-shadow: 0 0 0 5px rgba(238,90,56,0); }
+  }
   h1.hero-title { font-size: clamp(2.4rem, 6vw, 4.1rem); line-height: 1.06; font-weight: 500; max-width: 18ch; }
   h1.hero-title b { font-weight: 700; }
   .hero-sub { margin-top: 24px; font-size: 1.14rem; color: var(--slate); max-width: 50ch; line-height: 1.6; }
-  .hero-sphere-slot { margin: 44px 0 8px; --sph: 300px; }
+  .hero-sphere-slot { margin: 44px 0 8px; --sph: 300px; position: relative; }
+  .hero-sphere-slot::before {
+    content: '';
+    position: absolute; inset: -30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(238,90,56,0.35), transparent 68%);
+    filter: blur(20px);
+    animation: glowPulse 4.5s ease-in-out infinite;
+    z-index: -1;
+  }
+  @keyframes glowPulse { 0%, 100% { opacity: 0.55; transform: scale(0.94); } 50% { opacity: 1; transform: scale(1.04); } }
   @media (max-width: 640px) { .hero-sphere-slot { --sph: 220px; } .hero-tag, .hero-index { position: static; text-align: left; margin-bottom: 18px; } }
+
+  .hero-ticker-wrap { margin-top: 40px; width: 100%; max-width: 640px; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+  .hero-ticker { display: flex; gap: 34px; white-space: nowrap; width: max-content; animation: tickerScroll 26s linear infinite; }
+  .hero-ticker span { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--slate-soft); display: inline-flex; align-items: center; gap: 8px; }
+  .hero-ticker span::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--coral); }
+  @keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
   /* ===================== EYEBROW / SECTIONS ===================== */
   section { position: relative; padding: 90px 0; z-index: 2; }
@@ -210,7 +231,18 @@
     border: 1px solid var(--glass-border);
     border-radius: 28px;
     box-shadow: 0 30px 60px -30px var(--shadow);
+    transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
   }
+  .stat-card.glass-panel:hover, .agent-cell.glass-panel:hover, .step-card.glass-panel:hover, .deploy-cell.glass-panel:hover, .principle-row.glass-panel:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 40px 70px -28px var(--shadow);
+    border-color: rgba(238,90,56,0.28);
+  }
+
+  /* ===================== SCROLL REVEAL ===================== */
+  .reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1); }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
 
   /* ===================== STAT CALLOUTS ===================== */
   .stat-row {
@@ -392,6 +424,7 @@
     <div class="brand"><span class="dot"></span>HARSHA AI OS</div>
     <div class="navlinks" id="navlinks">
       <a href="#mission" data-id="mission">Mission</a>
+      <a href="#opportunity" data-id="opportunity">Opportunity</a>
       <a href="#system" data-id="system">System</a>
       <a href="#agents" data-id="agents">Agents</a>
       <a href="#security" data-id="security">Security</a>
@@ -417,25 +450,88 @@
         <div class="sphere"><svg viewBox="0 0 200 200"><use href="#sphere-lines"></use></svg></div>
       </div>
 
-      <p class="hero-sub">Harsha&nbsp;AI&nbsp;OS plans tests, generates automation, executes it, inspects failures, repairs what it can, and reports what it did &mdash; with evidence attached to every step. Built to be useful on one laptop first, architected to become an enterprise product later.</p>
+      <p class="hero-sub">AI has made writing software nearly free. It hasn&rsquo;t made software <em>trustworthy</em> &mdash; that bottleneck just moved downstream. Harsha&nbsp;AI&nbsp;OS is the verification layer for the AI-software era: a local-first operating system that plans, generates, executes, inspects, repairs and reports on quality, with evidence attached to every step.</p>
+      <div class="hero-ticker-wrap">
+        <div class="hero-ticker" id="heroTicker"></div>
+      </div>
     </div>
   </section>
 
   <!-- KEY FACTS -->
   <section style="padding-top:0;">
     <div class="stat-row">
-      <div class="glass-panel stat-card">
-        <div class="stat-num"><span>19</span> agents</div>
+      <div class="glass-panel stat-card reveal">
+        <div class="stat-num"><span class="cnt" data-to="19">0</span> agents</div>
         <div class="stat-tx">One shared contract &mdash; input, plan, action, result, policy.</div>
       </div>
-      <div class="glass-panel stat-card">
+      <div class="glass-panel stat-card reveal">
         <div class="stat-num">macOS · Win · <span>Linux</span></div>
         <div class="stat-tx">Cross-platform from the architecture up, not bolted on later.</div>
       </div>
-      <div class="glass-panel stat-card">
-        <div class="stat-num"><span>0</span> hardcoded secrets</div>
+      <div class="glass-panel stat-card reveal">
+        <div class="stat-num"><span class="cnt" data-to="0">0</span> hardcoded secrets</div>
         <div class="stat-tx">Security is a day-one requirement, not a retrofit.</div>
       </div>
+    </div>
+  </section>
+
+  <!-- OPPORTUNITY -->
+  <section id="opportunity">
+    <div class="eyebrow"><span class="dot"></span>Why now</div>
+    <h2 class="h-section">The bottleneck moved. It isn&rsquo;t writing code anymore.</h2>
+    <p class="lede">Coding assistants solved generation. Most professional developers now write code with AI in the loop. What nobody has solved is <b>trust at that speed</b> &mdash; and every team shipping AI-generated code is quietly absorbing that risk by hand.</p>
+
+    <div class="prose" style="max-width:70ch; margin-top:24px;">
+      <p style="color:var(--slate)">Every generation of software tooling has followed the same pattern: the easy part gets automated first, and the hard part becomes the new bottleneck. Compilers automated translation; testing stayed manual. CI/CD automated deployment; QA stayed manual. Now AI has automated <i>writing</i> the code itself &mdash; and QA is still running on the same manual, script-heavy playbook it had a decade ago.</p>
+      <p>That gap is the opportunity. It doesn&rsquo;t close on its own &mdash; it needs an operating system built for it.</p>
+    </div>
+
+    <figure class="panel glass-panel diagram reveal">
+      <svg viewBox="0 0 900 380" role="img" aria-label="A line chart showing AI-generated code volume rising steeply over time, while manual QA capacity rises only slowly and linearly, leaving a widening gap between how much software gets written and how much of it gets properly verified.">
+        <defs>
+          <linearGradient id="gapFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#EE5A38" stop-opacity="0.16"></stop>
+            <stop offset="100%" stop-color="#EE5A38" stop-opacity="0.02"></stop>
+          </linearGradient>
+        </defs>
+        <line x1="60" y1="320" x2="860" y2="320" stroke="#D8DCEC" stroke-width="1.3"></line>
+        <line x1="60" y1="40" x2="60" y2="320" stroke="#D8DCEC" stroke-width="1.3"></line>
+        <path d="M60,300 C300,260 560,140 860,50 L860,320 C560,320 300,320 60,320 Z" fill="url(#gapFill)"></path>
+        <path d="M60,300 C300,260 560,140 860,50" fill="none" stroke="#EE5A38" stroke-width="2.6"></path>
+        <path d="M60,300 C300,280 560,250 860,215" fill="none" stroke="#545B7D" stroke-width="2.2" stroke-dasharray="6 5"></path>
+        <text x="600" y="105" class="node-label" style="fill:#C8431F; font-size:13px">AI-generated code volume</text>
+        <text x="600" y="272" class="node-label" style="fill:#545B7D; font-size:13px; font-weight:500">Manual QA capacity</text>
+        <text x="742" y="150" class="node-label" style="fill:#C8431F; font-size:12px; font-weight:700">the gap</text>
+        <text x="60" y="340" class="edge-label" text-anchor="middle" style="font-size:11px">today</text>
+        <text x="860" y="340" class="edge-label" text-anchor="middle" style="font-size:11px">+5 years</text>
+      </svg>
+      <figcaption>Illustrative, not measured data. The direction is the claim: as AI compounds how much code gets written, quality assurance built on manual processes falls further behind &mdash; and someone has to build the layer that closes it.</figcaption>
+    </figure>
+
+    <div class="stat-row" style="margin-top:44px;">
+      <div class="glass-panel stat-card reveal">
+        <div class="stat-num">$40B<span>+</span></div>
+        <div class="stat-tx">Rough industry estimate of the global software testing/QA market today &mdash; growing at double-digit rates as software output accelerates.</div>
+      </div>
+      <div class="glass-panel stat-card reveal">
+        <div class="stat-num">Every<span> company</span></div>
+        <div class="stat-tx">that ships software needs QA. It&rsquo;s not a niche workflow &mdash; it&rsquo;s a universal, recurring cost center ready to be re-platformed.</div>
+      </div>
+      <div class="glass-panel stat-card reveal">
+        <div class="stat-num">0<span> → 1</span></div>
+        <div class="stat-tx">Category-defining moment: &ldquo;AI QA operating system&rdquo; doesn&rsquo;t have an incumbent yet. Most tools automate a task; none govern the whole loop.</div>
+      </div>
+    </div>
+
+    <h2 class="h-section" style="margin-top:76px;">Why this is hard to copy</h2>
+    <p class="lede">A single clever prompt is not a moat. The moat is the system around it.</p>
+    <div class="cap-grid" style="margin-top:36px;">
+      <div class="cap-item"><span class="mk">&rarr;</span><span class="tx"><b>Governed multi-agent architecture</b> &mdash; 19 specialists sharing one contract, not one prompt wearing different hats</span></div>
+      <div class="cap-item"><span class="mk">&rarr;</span><span class="tx"><b>Evidence-gated verification loop</b> &mdash; output is never trusted without a passing run, a trace, a screenshot to point at</span></div>
+      <div class="cap-item"><span class="mk">&rarr;</span><span class="tx"><b>Security architected in, not bolted on</b> &mdash; approval gates and audit trails from the first commit, not a v2 feature</span></div>
+      <div class="cap-item"><span class="mk">&rarr;</span><span class="tx"><b>Local-first, enterprise-ready by design</b> &mdash; one architecture that scales from a laptop to a regulated bank deployment</span></div>
+      <div class="cap-item"><span class="mk">&rarr;</span><span class="tx"><b>Full-stack coverage</b> &mdash; web, mobile, API, database, performance and security in one governed system, not six disconnected tools</span></div>
+      <div class="cap-item"><span class="mk">&rarr;</span><span class="tx"><b>Adapter-based, not vendor-locked</b> &mdash; every model, database and automation tool sits behind an interface that can be swapped</span></div>
     </div>
   </section>
 
@@ -746,15 +842,31 @@
 
   <!-- STATUS -->
   <section id="status">
-    <div class="eyebrow"><span class="dot"></span>Where this stands</div>
-    <h2 class="h-section">Where this stands today</h2>
+    <div class="eyebrow"><span class="dot"></span>Why back this now</div>
+    <h2 class="h-section">We&rsquo;d rather show you the blueprint than a demo built to impress you</h2>
     <div class="prose" style="max-width:68ch; margin-top:16px;">
-      <p style="color:var(--slate)">This document is the master blueprint. The software itself is built incrementally, in public working sessions &mdash; it is not represented as already complete.</p>
-      <p>The first milestone is not a polished product. It&rsquo;s a working vertical slice: a local AI service that takes a QA task, creates a test plan, inspects a browser page, generates automation code, executes a controlled test, stores evidence, and returns a report. That slice is the foundation everything else builds on.</p>
+      <p style="color:var(--slate)">Most AI pitches lead with a polished demo and hide the gap between the demo and the real product. We&rsquo;re doing the opposite: this <em>is</em> the real plan, published before the product, because in a category built on trust, how the product gets built is part of the pitch.</p>
+      <p>Harsha&nbsp;AI&nbsp;OS is pre-build today. That is the honest starting line for the earliest, highest-conviction capital &mdash; the investment isn&rsquo;t in what exists yet, it&rsquo;s in the architecture, the discipline behind it, and a market timing window that won&rsquo;t stay open.</p>
     </div>
-    <div class="glass-panel callout" style="border-left-color:var(--coral);">
+
+    <div class="stat-row" style="margin-top:40px;">
+      <div class="glass-panel stat-card reveal">
+        <div class="stat-num" style="font-size:1.3rem;">Working vertical slice</div>
+        <div class="stat-tx">Goal &rarr; test plan &rarr; browser inspection &rarr; generated automation &rarr; controlled execution &rarr; evidence &rarr; report. First milestone, ten sessions in.</div>
+      </div>
+      <div class="glass-panel stat-card reveal">
+        <div class="stat-num" style="font-size:1.3rem;">Built in public</div>
+        <div class="stat-tx">2&ndash;3 focused hours a day, every module shipped with tests, security review and documentation before the next one starts.</div>
+      </div>
+      <div class="glass-panel stat-card reveal">
+        <div class="stat-num" style="font-size:1.3rem;">No shortcuts on trust</div>
+        <div class="stat-tx">Security and evidence-gated verification are architected from commit one &mdash; not a roadmap promise for &ldquo;after we raise.&rdquo;</div>
+      </div>
+    </div>
+
+    <div class="glass-panel callout" style="border-left-color:var(--coral); margin-top:44px;">
       <span class="label" style="color:var(--coral-deep)">Immediate next step</span>
-      Inspect the machine, solve the storage/thermal setup, establish the portable workspace, install the prerequisites &mdash; then Session&nbsp;1.
+      Inspect the machine, solve the storage/thermal setup, establish the portable workspace, install the prerequisites &mdash; then Session&nbsp;1. If the thesis lands before the product does, that&rsquo;s the point &mdash; let&rsquo;s talk.
     </div>
   </section>
 
@@ -777,6 +889,7 @@
       </div>
       <div class="footer-nav">
         <a href="#mission">Mission</a>
+        <a href="#opportunity">Opportunity</a>
         <a href="#system">System</a>
         <a href="#agents">Agents</a>
         <a href="#security">Security</a>
@@ -796,7 +909,7 @@
 
 <script>
   (function () {
-    var ids = ['mission','loop','system','agents','security','stack','roadmap','deployment','principles','status'];
+    var ids = ['mission','opportunity','loop','system','agents','security','stack','roadmap','deployment','principles','status'];
     var rail = document.getElementById('rail');
     ids.forEach(function (id, i) {
       var dot = document.createElement('div');
@@ -825,5 +938,61 @@
     }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
     sections.forEach(function (s) { io.observe(s); });
     setActive('mission');
+
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // --- hero ticker ---
+    var tickerWords = [
+      'Plan', 'Inspect', 'Generate', 'Review', 'Execute', 'Verify', 'Report',
+      'Web automation', 'Mobile automation', 'API testing', 'Database validation',
+      'Self-healing locators', 'Root-cause analysis', 'Evidence-gated', 'Security-first'
+    ];
+    var tickerEl = document.getElementById('heroTicker');
+    if (tickerEl) {
+      var seq = tickerWords.concat(tickerWords).map(function (w) { return '<span>' + w + '</span>'; }).join('');
+      tickerEl.innerHTML = seq;
+      if (reduceMotion) tickerEl.style.animation = 'none';
+    }
+
+    // --- scroll reveal ---
+    if (!reduceMotion) {
+      var revealTargets = document.querySelectorAll(
+        '.glass-panel, h2.h-section, figure.panel, .cap-item, blockquote.pull'
+      );
+      revealTargets.forEach(function (el) { el.classList.add('reveal'); });
+      var revealIO = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            revealIO.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+      revealTargets.forEach(function (el) { revealIO.observe(el); });
+    } else {
+      document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+    }
+
+    // --- count-up numbers ---
+    var counters = document.querySelectorAll('.cnt');
+    var countIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        var to = parseInt(el.dataset.to, 10) || 0;
+        countIO.unobserve(el);
+        if (reduceMotion || to === 0) { el.textContent = to; return; }
+        var start = null, dur = 1100;
+        function step(ts) {
+          if (!start) start = ts;
+          var p = Math.min(1, (ts - start) / dur);
+          var eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(eased * to);
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    }, { threshold: 0.6 });
+    counters.forEach(function (el) { countIO.observe(el); });
   })();
 </script>
